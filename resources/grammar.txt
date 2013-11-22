@@ -1,4 +1,4 @@
-message = [<':'> prefix <space> ] command {<space> param}
+<message> = [<':'> prefix <space> ] command {<space> param}
 prefix = servername | nick [ '!' nick ] [ '@' host]
 command = letters | #'[0-9]{3}'
 <space> = ' '+
