@@ -67,12 +67,7 @@
   (doseq [[input expected] provide-test-message-parsing]
     (is (= expected (raw-parse input)))))
 
-(def provide-test-message->string
-  [
-   [(message "PRIVMSG" '( "aconbere" "what's up?" )) "PRIVMSG aconbere :what's up?"]
-   [(message "WiZ" "ADMIN" '("*.edu")) ":WiZ ADMIN :*.edu" ]
-  ]
-)
+(def provide-test-message->string)
 
 (deftest test-message->string
   (doseq [[input expected] provide-test-message->string]
