@@ -78,8 +78,8 @@
     (is (= expected (message->string input)))))
 
 (def provide-test-parse [
-  ["USER guest tolmoon tolsun :Ronnie Reagan" { :command "USER" :params '("guest" "tolmoon" "tolsun" "Ronnie Reagan") :prefix nil}]
-  [":WiZ TRACE AngelDust" { :command "TRACE" :params '("AngelDust") :prefix "WiZ" }]
+  ["USER guest tolmoon tolsun :Ronnie Reagan" { :command "USER" :username "guest" :hostname "tolmoon" :servername "tolsun" :realname "Ronnie Reagan" :prefix nil }]
+  [":WiZ TRACE AngelDust" { :command "TRACE" :server "AngelDust" :prefix "WiZ" }]
 ])
 
 (deftest test-parse

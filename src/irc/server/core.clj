@@ -58,12 +58,12 @@
     (receive-all ch
       (fn [input] 
         (let [msg (parse input)]
-          (when-not (insta/failure? msg)
+          (if msg
             (enqueue ch (str "You said " msg))))))))
 
 (defn start-server [port state]
   (start-tcp-server
-    handler
+    (make-handler)
     {:port port, :frame (string :utf-8 :delimiters ["\r\n"])}))
 
 (defn -main [] (start-server 6667 (make-handler)))
