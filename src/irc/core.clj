@@ -29,6 +29,15 @@
   "TRACE"   [:server]
   "ADMIN"   []
   "INFO"    []
+  "PRIVMSG" [:nick :msg]
+  "NOTICE"  [:nick :msg]
+  "WHO"     [:nicks] ; TODO make it so that if the last variable here captures all trailing params
+  "WHOIS"   [:nicks] ; TODO make it so that if the last variable here captures all trailing params
+  "WHOWAS"  [:nicks] ; TODO make it so that if the last variable here captures all trailing params
+  "KILL"    [:nick :reason]
+  "PING"    [:nick]
+  "PONG"    [:deamons]
+  "ERROR"   [:msg]
 })
 
 (defn- do-parse [x]

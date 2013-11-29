@@ -1,70 +1,32 @@
 (ns irc.server.core
   (:require [instaparse.core :as insta])
-  (:use [lamina core] [aleph tcp] [gloss core] [irc core]))
+  (:use [lamina core] [aleph tcp] [gloss core] [irc core] [irc.server session]))
 
-;; thoughts
-;; 1. rooms are channels
-;; 2. private messages are channels
-;;
-;;
-;; USER
-;; 
-;; { :username :nick :password :client }
-;;
-;; CLIENT
-;;
-;; { :channel }
-;;
-;; ROOM
-;;
-;; { :name :users :channel }
-;;
-;; SERVER
-;;
-;; { :rooms { <name> <room> }
-;;   :users [ <user> ]
-;;   :clients [ <client> ]
-;;   :sessions [ <username> <client> }
+(defn simple-handler [ch client-info]
+  (let [session-state (ref initial-state)]
+    (receive-all
+      (->> ch (map* parse) (filter* identity))
+      (fn [msg] (println msg)))))
 
-(defn make-server 
-  ([] (make-server {} {} {} {}))
-  [ rooms users sessions clients ]
-   { :rooms rooms :users users :sessions session :clients clients })
-
-(defn make-user
-  [username nick password]
-  { :username username :nick nick :password password})
-
-(defn make-room
-  [name channel]
-  { :name name :channel channel})
-
-(defn make-client [channel] { :channel channel})
-
-(defn add-user
-  [state user]
-  (update-in state [:users] conj user))
-
-(defn add-room
-  [state room]
-  (update-in state [(:name room)] assoc room))
-
-(defn add-client
-  [state client]
-  (update-in state [:users] conj client))
-
-(defn make-handler 
-  (fn [ch client-info]
-    (receive-all ch
-      (fn [input] 
-        (let [msg (parse input)]
-          (if msg
-            (enqueue ch (str "You said " msg))))))))
+(defn handler [ch client-info]
+  (let [session-state (ref initial-state)]
+    (receive-all
+      (->> ch (map* parse) (filter* identity))
+      (fn [msg]
+        (println msg)
+        (if (registered? session-state)
+          (let [n (next-state nil (deref session-state) msg)]
+            (println n)
+            (if (failure? n)
+              (do
+                (enqueue ch (error-msg n))
+                (close ch)
+              )
+              (dosync (ref-set session-state n)))))))))
 
 (defn start-server [port state]
   (start-tcp-server
-    (make-handler)
+    handler
     {:port port, :frame (string :utf-8 :delimiters ["\r\n"])}))
 
-(defn -main [] (start-server 6667 (make-handler)))
-
+;; (defn -main [] (start-server 6667 handler))
