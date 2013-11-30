@@ -2,12 +2,6 @@
   (:require [instaparse.core :as insta])
   (:use [lamina core] [aleph tcp] [gloss core] [irc core] [irc.server session]))
 
-(defn simple-handler [ch client-info]
-  (let [session-state (ref initial-state)]
-    (receive-all
-      (->> ch (map* parse) (filter* identity))
-      (fn [msg] (println msg)))))
-
 (defn handler [ch client-info]
   (let [session-state (ref initial-state)]
     (receive-all
@@ -15,6 +9,7 @@
       (fn [msg]
         (println msg)
         (if (registered? session-state)
+
           (let [n (next-state nil (deref session-state) msg)]
             (println n)
             (if (failure? n)

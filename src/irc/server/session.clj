@@ -13,9 +13,23 @@
         state (assoc state :state new-state)]
     state))
 
+(defn- state-join
+  [state name]
+  (update-in state [:value :rooms] conj name))
+
 (defn- fail
   [state message]
   (assoc state :state :fail, :reason message))
+
+(defn- join-channel
+  [server state command]
+  (let [{ channels :channels } command]
+    (map channels (fn [[ name key] channel]
+      (if (server-valid-channel-pass name key)
+        (do
+          (server-join (state-get :username) name key)
+          (state-join state name))
+        nil)))))
 
 (defn- handle-user
   [server state command]
@@ -54,9 +68,10 @@
 ;; :start -> :pass -> :nick -> :user -> :registered
 (defmulti next-state (fn [_ state message] [(:state state) (:command message)]))
 
-(defmethod next-state [:start "PASS"] [server state command] (handle-password server state command)) 
-(defmethod next-state [:pass  "PASS"] [server state command] (handle-password server state command))
-(defmethod next-state [:pass  "NICK"] [server state command] (handle-nick server state command))
-(defmethod next-state [:nick  "NICK"] [server state command] (handle-nick server state command))
-(defmethod next-state [:nick  "USER"] [server state command] (handle-user server state command))
+(defmethod next-state [:start "PASS"][server state command](handle-password server state command)) 
+(defmethod next-state [:pass "PASS"] [server state command] (handle-password server state command))
+(defmethod next-state [:pass "NICK"] [server state command] (handle-nick server state command))
+(defmethod next-state [:nick "NICK"] [server state command] (handle-nick server state command))
+(defmethod next-state [:nick "USER"] [server state command] (handle-user server state command))
+(defmethod next-state [:registered "JOIN"] [server state command] (handle-user server state command))
 (defmethod next-state :default        [server state command] (fail state "Invalid message"))
